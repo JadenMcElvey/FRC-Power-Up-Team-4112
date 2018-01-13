@@ -10,11 +10,14 @@
 
 #include <Drive/DifferentialDrive.h>
 #include <Joystick.h>
+#include <XboxController.h>
 #include <SampleRobot.h>
 #include <SmartDashboard/SendableChooser.h>
 #include <SmartDashboard/SmartDashboard.h>
-#include <Spark.h>
+#include <Talon.h>
+#include <PWMTalonSRX.h>
 #include <Timer.h>
+#include <AHRS.h>
 
 /**
  * This is a demo program showing the use of the DifferentialDrive class.
@@ -31,9 +34,8 @@
 class Robot : public frc::SampleRobot {
 public:
 	Robot() {
-		// Note SmartDashboard is not initialized here, wait until
-		// RobotInit to make SmartDashboard calls
-		m_robotDrive.SetExpiration(0.1);
+		AHRS *navx;
+		robotDrive.SetExpiration(0.1);
 	}
 
 	void RobotInit() {
@@ -64,28 +66,28 @@ public:
 		// MotorSafety improves safety when motors are updated in loops
 		// but is disabled here because motor updates are not looped in
 		// this autonomous mode.
-		m_robotDrive.SetSafetyEnabled(false);
+		robotDrive.SetSafetyEnabled(false);
 
 		if (autoSelected == kAutoNameCustom) {
 			// Custom Auto goes here
 			std::cout << "Running custom Autonomous" << std::endl;
 
 			// Spin at half speed for two seconds
-			m_robotDrive.ArcadeDrive(0.0, 0.5);
+			robotDrive.ArcadeDrive(0.0, 0.5);
 			frc::Wait(2.0);
 
 			// Stop robot
-			m_robotDrive.ArcadeDrive(0.0, 0.0);
+			robotDrive.ArcadeDrive(0.0, 0.0);
 		} else {
 			// Default Auto goes here
 			std::cout << "Running default Autonomous" << std::endl;
 
 			// Drive forwards at half speed for two seconds
-			m_robotDrive.ArcadeDrive(-0.5, 0.0);
+			robotDrive.ArcadeDrive(-0.5, 0.0);
 			frc::Wait(2.0);
 
 			// Stop robot
-			m_robotDrive.ArcadeDrive(0.0, 0.0);
+			robotDrive.ArcadeDrive(0.0, 0.0);
 		}
 	}
 
@@ -93,11 +95,10 @@ public:
 	 * Runs the motors with arcade steering.
 	 */
 	void OperatorControl() override {
-		m_robotDrive.SetSafetyEnabled(true);
+		robotDrive.SetSafetyEnabled(true);
 		while (IsOperatorControl() && IsEnabled()) {
 			// Drive with arcade style (use right stick)
-			m_robotDrive.ArcadeDrive(
-					-m_stick.GetY(), m_stick.GetX());
+			robotDrive.TankDrive(-controller.GetY(frc::GenericHID::kLeftHand), controller.GetX(frc::GenericHID::kRightHand));
 
 			// The motors will be updated every 5ms
 			frc::Wait(0.005);
@@ -111,11 +112,17 @@ public:
 
 private:
 	// Robot drive system
-	frc::Spark m_leftMotor{0};
-	frc::Spark m_rightMotor{1};
-	frc::DifferentialDrive m_robotDrive{m_leftMotor, m_rightMotor};
+	frc::PWMTalonSRX f_leftMotor{0};
+	frc::PWMTalonSRX b_leftMotor{1};
+	frc::PWMTalonSRX f_rightMotor{2};
+	frc::PWMTalonSRX b_rightMotor{3};
 
-	frc::Joystick m_stick{0};
+	frc::SpeedControllerGroup lDriveMotors{f_leftMotor, b_leftMotor};
+	frc::SpeedControllerGroup rDriveMotors{f_rightMotor, b_rightMotor};
+
+	frc::DifferentialDrive robotDrive{lDriveMotors, rDriveMotors};
+
+	frc::XboxController controller{0};
 
 	frc::SendableChooser<std::string> m_chooser;
 	const std::string kAutoNameDefault = "Default";
