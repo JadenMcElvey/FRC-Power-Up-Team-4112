@@ -34,8 +34,16 @@
 class Robot : public frc::SampleRobot {
 public:
 	Robot() {
-		AHRS *navx;
 		robotDrive.SetExpiration(0.1);
+		navx = new AHRS(SPI::Port::kMXP);
+		try
+		{
+		   navx = new AHRS(SPI::Port::kMXP);
+		   } catch (std::exception ex ) {
+		   std::string err_string = "Error instantiating navX-MXP:  ";
+		   err_string += ex.what();
+		   DriverStation::ReportError(err_string.c_str());
+		}
 	}
 
 	void RobotInit() {
@@ -98,7 +106,7 @@ public:
 		robotDrive.SetSafetyEnabled(true);
 		while (IsOperatorControl() && IsEnabled()) {
 			// Drive with arcade style (use right stick)
-			robotDrive.TankDrive(-controller.GetY(frc::GenericHID::kLeftHand), controller.GetX(frc::GenericHID::kRightHand));
+			robotDrive.TankDrive(-controller.GetY(frc::GenericHID::kLeftHand), controller.GetY(frc::GenericHID::kRightHand));
 
 			// The motors will be updated every 5ms
 			frc::Wait(0.005);
@@ -123,6 +131,8 @@ private:
 	frc::DifferentialDrive robotDrive{lDriveMotors, rDriveMotors};
 
 	frc::XboxController controller{0};
+
+	AHRS *navx;
 
 	frc::SendableChooser<std::string> m_chooser;
 	const std::string kAutoNameDefault = "Default";
