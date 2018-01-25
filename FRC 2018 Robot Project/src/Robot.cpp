@@ -16,6 +16,7 @@
 #include <SmartDashboard/SmartDashboard.h>
 #include <Talon.h>
 #include <PWMTalonSRX.h>
+#include <DoubleSolenoid.h>
 #include <Timer.h>
 #include <AHRS.h>
 
@@ -131,6 +132,8 @@ private:
 	frc::DifferentialDrive robotDrive{lDriveMotors, rDriveMotors};
 
 	frc::XboxController controller{0};
+
+	frc::DoubleSolenoid shifter{0, 1};
 
 	AHRS *navx;
 
