@@ -48,7 +48,7 @@ public:
 		   DriverStation::ReportError(err_string.c_str());
 		}
 		intakeLeft.SetInverted(true);
-
+		shifts = 0;
 	}
 
 	void RobotInit() {
@@ -56,6 +56,9 @@ public:
 		//m_chooser.AddObject(kAutoNameCustom, kAutoNameCustom);
 		//frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
 		compressor.Start();
+
+		leftEnc.SetDistancePerPulse(encoderScale);
+		rightEnc.SetDistancePerPulse(encoderScale);
 	}
 
 	/*
@@ -72,22 +75,176 @@ public:
 	 * well.
 	 */
 	void Autonomous() {
-		//std::string autoSelected = m_chooser.GetSelected();
-		 std::string autoSelected = frc::SmartDashboard::GetString("Auto Selector", kAutoNameDefault);
+		int angle;
+		std::string gameData;
+		gameData = frc::DriverStation::GetInstance().GetGameSpecificMessage();
+
+		leftEnc.Reset();
+		rightEnc.Reset();
+
+		frc::PIDController LFdriveController{kP, kI, kD, &leftEnc, &f_leftMotor};
+		frc::PIDController LBdriveController{kP, kI, kD, &leftEnc, &b_leftMotor};
+		frc::PIDController RFdriveController{kP, kI, kD, &rightEnc, &f_rightMotor};
+		frc::PIDController RBdriveController{kP, kI, kD, &rightEnc, &b_rightMotor};
+
+		LFdriveController.Disable();
+		LBdriveController.Disable();
+		RFdriveController.Disable();
+		RBdriveController.Disable();
+
+		LFdriveController.SetOutputRange(-1, 1);
+		LBdriveController.SetOutputRange(-1, 1);
+		RFdriveController.SetOutputRange(-1, 1);
+		RBdriveController.SetOutputRange(-1, 1);
+
+		std::string autoSelected = frc::SmartDashboard::GetString("Auto Selector", kAutoNameMobility);
 		std::cout << "Auto selected: " << autoSelected << std::endl;
 
-		// MotorSafety improves safety when motors are updated in loops
-		// but is disabled here because motor updates are not looped in
-		// this autonomous mode.
 		robotDrive.SetSafetyEnabled(false);
 
-		if (autoSelected == kAutoNameScale) {
-			// Custom Auto goes here
-			std::cout << "Running Scale Autonomous" << std::endl;
+		if (autoSelected == kAutoNameMobility)
+		{
+			while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
+			{
+				std::cout << "Beginning Mobility" << std::endl;
+				LFdriveController.SetSetpoint(120);
+				LBdriveController.SetSetpoint(120);
+				RFdriveController.SetSetpoint(120);
+				RBdriveController.SetSetpoint(120);
 
-		} else {
-			// Default Auto goes here
-			std::cout << "Running Line Autonomous" << std::endl;
+				LFdriveController.Enable();
+				LBdriveController.Enable();
+				RFdriveController.Enable();
+				RBdriveController.Enable();
+			}
+		}
+		else if (autoSelected == kAutoNameSwitchL)
+		{
+			if(gameData[0] == 'L')
+			{
+				std::cout << "Beginning Left Switch" << std::endl;
+				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
+				{
+					LFdriveController.SetSetpoint(120);
+					LBdriveController.SetSetpoint(120);
+					RFdriveController.SetSetpoint(120);
+					RBdriveController.SetSetpoint(120);
+
+					LFdriveController.Enable();
+					LBdriveController.Enable();
+					RFdriveController.Enable();
+					RBdriveController.Enable();
+				}
+				LFdriveController.Disable();
+				LBdriveController.Disable();
+				RFdriveController.Disable();
+				RBdriveController.Disable();
+				angle = 90;
+				while((navx->GetAngle()<95)&&(navx->GetAngle()>85))
+				{
+					robotDrive.CurvatureDrive(.5, ((navx->GetAngle()+angle)*kt), true);
+					lift.Set(.25);
+				}
+				lift.Set(0);
+				intake.Set(-1);
+				frc::Wait(2);
+				intake.Set(0);
+			}
+			else
+			{
+				std::cout << "Left Switch Failed; Performing Mobility" << std::endl;
+				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
+				{
+					std::cout << "Beginning Mobility" << std::endl;
+					LFdriveController.SetSetpoint(120);
+					LBdriveController.SetSetpoint(120);
+					RFdriveController.SetSetpoint(120);
+					RBdriveController.SetSetpoint(120);
+
+					LFdriveController.Enable();
+					LBdriveController.Enable();
+					RFdriveController.Enable();
+					RBdriveController.Enable();
+				}
+			}
+		}
+		else if (autoSelected == kAutoNameSwitchR)
+		{
+			if(gameData[0] == 'R')
+			{
+				std::cout << "Beginning Right Switch" << std::endl;
+
+			}
+			else
+			{
+				std::cout << "Right Switch Failed; Performing Mobility" << std::endl;
+				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
+				{
+					std::cout << "Beginning Mobility" << std::endl;
+					LFdriveController.SetSetpoint(120);
+					LBdriveController.SetSetpoint(120);
+					RFdriveController.SetSetpoint(120);
+					RBdriveController.SetSetpoint(120);
+
+					LFdriveController.Enable();
+					LBdriveController.Enable();
+					RFdriveController.Enable();
+					RBdriveController.Enable();
+				}
+			}
+		}
+		else if (autoSelected == kAutoNameScaleL)
+		{
+			if(gameData[1] == 'L')
+			{
+				std::cout << "Beginning Left Scale" << std::endl;
+
+			}
+			else
+			{
+				std::cout << "Left Scale Failed; Performing Mobility" << std::endl;
+				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
+				{
+					std::cout << "Beginning Mobility" << std::endl;
+					LFdriveController.SetSetpoint(120);
+					LBdriveController.SetSetpoint(120);
+					RFdriveController.SetSetpoint(120);
+					RBdriveController.SetSetpoint(120);
+
+					LFdriveController.Enable();
+					LBdriveController.Enable();
+					RFdriveController.Enable();
+					RBdriveController.Enable();
+				}
+			}
+		}
+		else if (autoSelected == kAutoNameScaleR)
+		{
+			if(gameData[1] == 'R')
+			{
+				std::cout << "Beginning Right Scale" << std::endl;
+
+			}
+			else
+			{
+				std::cout << "Right Scale Failed; Performing Mobility" << std::endl;
+				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
+				{
+					std::cout << "Beginning Mobility" << std::endl;
+					LFdriveController.SetSetpoint(120);
+					LBdriveController.SetSetpoint(120);
+					RFdriveController.SetSetpoint(120);
+					RBdriveController.SetSetpoint(120);
+
+					LFdriveController.Enable();
+					LBdriveController.Enable();
+					RFdriveController.Enable();
+					RBdriveController.Enable();
+				}
+			}
+		}
+		else
+		{
 
 		}
 	}
@@ -182,6 +339,8 @@ private:
 	// ENCODERS
 	frc::Encoder leftEnc{0, 1, true, frc::CounterBase::EncodingType::k4X};
 	frc::Encoder rightEnc{2, 3, false, frc::CounterBase::EncodingType::k4X};
+	const double encoderScale = ((3.141592 * 8) / 2048);
+	int shifts;
 	// HALL EFFECTS
 	frc::DigitalInput Hall{4};
 	// Compressor
@@ -189,8 +348,16 @@ private:
 	//PID Controllers
 
 	//frc::SendableChooser<std::string> m_chooser;
-	const std::string kAutoNameDefault = "Default";
-	const std::string kAutoNameScale = "Scale";
+	const std::string kAutoNameMobility = "Mobility";
+	const std::string kAutoNameSwitchL = "L Switch";
+	const std::string kAutoNameSwitchR = "R Switch";
+	const std::string kAutoNameScaleL = "L Scale";
+	const std::string kAutoNameScaleR = "R Scale";
+
+	const double kP = 1;
+	const double kI = .001;
+	const double kD = .00001;
+	const double kt = .01;
 };
 
 START_ROBOT_CLASS(Robot)
