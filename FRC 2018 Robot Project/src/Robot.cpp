@@ -19,6 +19,8 @@
 #include <DoubleSolenoid.h>
 #include <Timer.h>
 #include <AHRS.h>
+#include <Encoder.h>
+#include <DigitalInput.h>
 
 /**
  * This is a demo program showing the use of the DifferentialDrive class.
@@ -45,12 +47,15 @@ public:
 		   err_string += ex.what();
 		   DriverStation::ReportError(err_string.c_str());
 		}
+		intakeLeft.SetInverted(true);
+
 	}
 
 	void RobotInit() {
-		m_chooser.AddDefault(kAutoNameDefault, kAutoNameDefault);
-		m_chooser.AddObject(kAutoNameCustom, kAutoNameCustom);
-		frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
+		//m_chooser.AddDefault(kAutoNameDefault, kAutoNameDefault);
+		//m_chooser.AddObject(kAutoNameCustom, kAutoNameCustom);
+		//frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
+		compressor.Start();
 	}
 
 	/*
@@ -67,9 +72,8 @@ public:
 	 * well.
 	 */
 	void Autonomous() {
-		std::string autoSelected = m_chooser.GetSelected();
-		// std::string autoSelected = frc::SmartDashboard::GetString(
-		// "Auto Selector", kAutoNameDefault);
+		//std::string autoSelected = m_chooser.GetSelected();
+		 std::string autoSelected = frc::SmartDashboard::GetString("Auto Selector", kAutoNameDefault);
 		std::cout << "Auto selected: " << autoSelected << std::endl;
 
 		// MotorSafety improves safety when motors are updated in loops
@@ -77,26 +81,14 @@ public:
 		// this autonomous mode.
 		robotDrive.SetSafetyEnabled(false);
 
-		if (autoSelected == kAutoNameCustom) {
+		if (autoSelected == kAutoNameScale) {
 			// Custom Auto goes here
-			std::cout << "Running custom Autonomous" << std::endl;
+			std::cout << "Running Scale Autonomous" << std::endl;
 
-			// Spin at half speed for two seconds
-			robotDrive.ArcadeDrive(0.0, 0.5);
-			frc::Wait(2.0);
-
-			// Stop robot
-			robotDrive.ArcadeDrive(0.0, 0.0);
 		} else {
 			// Default Auto goes here
-			std::cout << "Running default Autonomous" << std::endl;
+			std::cout << "Running Line Autonomous" << std::endl;
 
-			// Drive forwards at half speed for two seconds
-			robotDrive.ArcadeDrive(-0.5, 0.0);
-			frc::Wait(2.0);
-
-			// Stop robot
-			robotDrive.ArcadeDrive(0.0, 0.0);
 		}
 	}
 
@@ -106,9 +98,50 @@ public:
 	void OperatorControl() override {
 		robotDrive.SetSafetyEnabled(true);
 		while (IsOperatorControl() && IsEnabled()) {
-			// Drive with arcade style (use right stick)
-			robotDrive.TankDrive(-controller.GetY(frc::GenericHID::kLeftHand), controller.GetY(frc::GenericHID::kRightHand));
-
+			// Drive
+			robotDrive.TankDrive(controller.GetY(frc::GenericHID::kLeftHand), controller.GetY(frc::GenericHID::kRightHand));
+			// Lift
+			lift.Set(controller.GetTriggerAxis(frc::GenericHID::kLeftHand)-controller.GetTriggerAxis(frc::GenericHID::kRightHand));
+			/*
+			if (!highHall.Get())
+			{
+				lift.Set(1);
+			}
+			else if (!lowHall.Get())
+			{
+				lift.Set(-1);
+			}
+			else
+			{
+				lift.Set(0);
+			}
+			*/
+			//Intake
+			if (controller.GetBumper(frc::GenericHID::kLeftHand))
+			{
+				intake.Set( .7);
+			}
+			else if (controller.GetBumper(frc::GenericHID::kRightHand))
+			{
+				intake.Set(-.7);
+			}
+			else
+			{
+				intake.Set(0);
+			}
+			if (controller.GetStickButton(frc::GenericHID::kLeftHand))
+			{
+				shifter.Set(frc::DoubleSolenoid::kForward);
+			}
+			else if (controller.GetStickButton(frc::GenericHID::kRightHand))
+			{
+				shifter.Set(frc::DoubleSolenoid::kReverse);
+			}
+			else
+			{
+				shifter.Set(frc::DoubleSolenoid::kOff);
+			}
+			// std::cout << Hall.Get() << std::endl;
 			// The motors will be updated every 5ms
 			frc::Wait(0.005);
 		}
@@ -120,7 +153,7 @@ public:
 	void Test() override {}
 
 private:
-	// Robot drive system
+	// ROBOT DRIVE SYSTEM
 	frc::PWMTalonSRX f_leftMotor{0};
 	frc::PWMTalonSRX b_leftMotor{1};
 	frc::PWMTalonSRX f_rightMotor{2};
@@ -130,16 +163,34 @@ private:
 	frc::SpeedControllerGroup rDriveMotors{f_rightMotor, b_rightMotor};
 
 	frc::DifferentialDrive robotDrive{lDriveMotors, rDriveMotors};
+	// ROBOT LIFT
+	frc::PWMTalonSRX liftOne{4};
+	frc::PWMTalonSRX liftTwo{5};
+
+	frc::SpeedControllerGroup lift{liftOne, liftTwo};
+	// ROBOT INTAKE
+	frc::Talon intakeLeft{6};
+	frc::Talon intakeRight{7};
+
+	frc::SpeedControllerGroup intake{intakeLeft, intakeRight};
 
 	frc::XboxController controller{0};
-
+	// PNUEMATIC SHIFTING
 	frc::DoubleSolenoid shifter{0, 1};
-
+	// NAVX GYRO
 	AHRS *navx;
+	// ENCODERS
+	frc::Encoder leftEnc{0, 1, true, frc::CounterBase::EncodingType::k4X};
+	frc::Encoder rightEnc{2, 3, false, frc::CounterBase::EncodingType::k4X};
+	// HALL EFFECTS
+	frc::DigitalInput Hall{4};
+	// Compressor
+	frc::Compressor compressor;
+	//PID Controllers
 
-	frc::SendableChooser<std::string> m_chooser;
+	//frc::SendableChooser<std::string> m_chooser;
 	const std::string kAutoNameDefault = "Default";
-	const std::string kAutoNameCustom = "My Auto";
+	const std::string kAutoNameScale = "Scale";
 };
 
 START_ROBOT_CLASS(Robot)
