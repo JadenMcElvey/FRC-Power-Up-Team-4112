@@ -87,15 +87,18 @@ public:
 		frc::PIDController RFdriveController{kP, kI, kD, &rightEnc, &f_rightMotor};
 		frc::PIDController RBdriveController{kP, kI, kD, &rightEnc, &b_rightMotor};
 
+		f_leftMotor.SetInverted(true);
+		b_leftMotor.SetInverted(true);
+
 		LFdriveController.Disable();
 		LBdriveController.Disable();
 		RFdriveController.Disable();
 		RBdriveController.Disable();
 
-		LFdriveController.SetOutputRange(-1, 1);
-		LBdriveController.SetOutputRange(-1, 1);
-		RFdriveController.SetOutputRange(-1, 1);
-		RBdriveController.SetOutputRange(-1, 1);
+		LFdriveController.SetOutputRange(-.5, .5);
+		LBdriveController.SetOutputRange(-.5, .5);
+		RFdriveController.SetOutputRange(-.5, .5);
+		RBdriveController.SetOutputRange(-.5, .5);
 
 		std::string autoSelected = frc::SmartDashboard::GetString("Auto Selector", kAutoNameMobility);
 		std::cout << "Auto selected: " << autoSelected << std::endl;
@@ -104,9 +107,9 @@ public:
 
 		if (autoSelected == kAutoNameMobility)
 		{
-			while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
+			std::cout << "Beginning Mobility" << std::endl;
+			while(leftEnc.GetDistance()< 119)
 			{
-				std::cout << "Beginning Mobility" << std::endl;
 				LFdriveController.SetSetpoint(120);
 				LBdriveController.SetSetpoint(120);
 				RFdriveController.SetSetpoint(120);
@@ -116,7 +119,12 @@ public:
 				LBdriveController.Enable();
 				RFdriveController.Enable();
 				RBdriveController.Enable();
+				std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
 			}
+			LFdriveController.Disable();
+			LBdriveController.Disable();
+			RFdriveController.Disable();
+			RBdriveController.Disable();
 		}
 		else if (autoSelected == kAutoNameSwitchL)
 		{
@@ -140,7 +148,7 @@ public:
 				RFdriveController.Disable();
 				RBdriveController.Disable();
 				angle = 90;
-				while((navx->GetAngle()<95)&&(navx->GetAngle()>85))
+				while(navx->GetAngle()<85)
 				{
 					robotDrive.CurvatureDrive(.5, ((navx->GetAngle()+angle)*kt), true);
 					lift.Set(.25);
@@ -152,10 +160,9 @@ public:
 			}
 			else
 			{
-				std::cout << "Left Switch Failed; Performing Mobility" << std::endl;
+				std::cout << "Sorry Left Switch Failed; Performing Mobility" << std::endl;
 				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
 				{
-					std::cout << "Beginning Mobility" << std::endl;
 					LFdriveController.SetSetpoint(120);
 					LBdriveController.SetSetpoint(120);
 					RFdriveController.SetSetpoint(120);
@@ -173,14 +180,38 @@ public:
 			if(gameData[0] == 'R')
 			{
 				std::cout << "Beginning Right Switch" << std::endl;
+				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
+				{
+					LFdriveController.SetSetpoint(120);
+					LBdriveController.SetSetpoint(120);
+					RFdriveController.SetSetpoint(120);
+					RBdriveController.SetSetpoint(120);
 
+					LFdriveController.Enable();
+					LBdriveController.Enable();
+					RFdriveController.Enable();
+					RBdriveController.Enable();
+				}
+				LFdriveController.Disable();
+				LBdriveController.Disable();
+				RFdriveController.Disable();
+				RBdriveController.Disable();
+				angle = -90;
+				while(navx->GetAngle()>-85)
+				{
+					robotDrive.CurvatureDrive(.5, ((navx->GetAngle()+angle)*kt), true);
+					lift.Set(.25);
+				}
+				lift.Set(0);
+				intake.Set(-1);
+				frc::Wait(2);
+				intake.Set(0);
 			}
 			else
 			{
-				std::cout << "Right Switch Failed; Performing Mobility" << std::endl;
+				std::cout << "Sorry Right Switch Failed; Performing Mobility" << std::endl;
 				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
 				{
-					std::cout << "Beginning Mobility" << std::endl;
 					LFdriveController.SetSetpoint(120);
 					LBdriveController.SetSetpoint(120);
 					RFdriveController.SetSetpoint(120);
@@ -198,14 +229,28 @@ public:
 			if(gameData[1] == 'L')
 			{
 				std::cout << "Beginning Left Scale" << std::endl;
+				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
+				{
+					LFdriveController.SetSetpoint(288);
+					LBdriveController.SetSetpoint(288);
+					RFdriveController.SetSetpoint(288);
+					RBdriveController.SetSetpoint(288);
 
+					LFdriveController.Enable();
+					LBdriveController.Enable();
+					RFdriveController.Enable();
+					RBdriveController.Enable();
+				}
+				LFdriveController.Disable();
+				LBdriveController.Disable();
+				RFdriveController.Disable();
+				RBdriveController.Disable();
 			}
 			else
 			{
-				std::cout << "Left Scale Failed; Performing Mobility" << std::endl;
+				std::cout << "Sorry Left Scale Failed; Performing Mobility" << std::endl;
 				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
 				{
-					std::cout << "Beginning Mobility" << std::endl;
 					LFdriveController.SetSetpoint(120);
 					LBdriveController.SetSetpoint(120);
 					RFdriveController.SetSetpoint(120);
@@ -223,14 +268,27 @@ public:
 			if(gameData[1] == 'R')
 			{
 				std::cout << "Beginning Right Scale" << std::endl;
-
-			}
-			else
-			{
-				std::cout << "Right Scale Failed; Performing Mobility" << std::endl;
 				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
 				{
-					std::cout << "Beginning Mobility" << std::endl;
+					LFdriveController.SetSetpoint(288);
+					LBdriveController.SetSetpoint(288);
+					RFdriveController.SetSetpoint(288);
+					RBdriveController.SetSetpoint(288);
+
+					LFdriveController.Enable();
+					LBdriveController.Enable();
+					RFdriveController.Enable();
+					RBdriveController.Enable();
+				}
+				LFdriveController.Disable();
+				LBdriveController.Disable();
+				RFdriveController.Disable();
+				RBdriveController.Disable();			}
+			else
+			{
+				std::cout << "Sorry Right Scale Failed; Performing Mobility" << std::endl;
+				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
+				{
 					LFdriveController.SetSetpoint(120);
 					LBdriveController.SetSetpoint(120);
 					RFdriveController.SetSetpoint(120);
@@ -253,26 +311,26 @@ public:
 	 * Runs the motors with arcade steering.
 	 */
 	void OperatorControl() override {
+		f_leftMotor.SetInverted(true);
+		b_leftMotor.SetInverted(true);
 		robotDrive.SetSafetyEnabled(true);
-		while (IsOperatorControl() && IsEnabled()) {
+		while (IsOperatorControl() && IsEnabled())
+			{
+			std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
 			// Drive
 			robotDrive.TankDrive(controller.GetY(frc::GenericHID::kLeftHand), controller.GetY(frc::GenericHID::kRightHand));
 			// Lift
 			lift.Set(controller.GetTriggerAxis(frc::GenericHID::kLeftHand)-controller.GetTriggerAxis(frc::GenericHID::kRightHand));
-			/*
-			if (!highHall.Get())
+
+			if (!Hall.Get())
 			{
-				lift.Set(1);
-			}
-			else if (!lowHall.Get())
-			{
-				lift.Set(-1);
+				lift.Set((controller.GetTriggerAxis(frc::GenericHID::kLeftHand)-controller.GetTriggerAxis(frc::GenericHID::kRightHand))*kH);
 			}
 			else
 			{
-				lift.Set(0);
+				lift.Set(controller.GetTriggerAxis(frc::GenericHID::kLeftHand)-controller.GetTriggerAxis(frc::GenericHID::kRightHand));
 			}
-			*/
+
 			//Intake
 			if (controller.GetBumper(frc::GenericHID::kLeftHand))
 			{
@@ -298,7 +356,6 @@ public:
 			{
 				shifter.Set(frc::DoubleSolenoid::kOff);
 			}
-			// std::cout << Hall.Get() << std::endl;
 			// The motors will be updated every 5ms
 			frc::Wait(0.005);
 		}
@@ -337,12 +394,13 @@ private:
 	// NAVX GYRO
 	AHRS *navx;
 	// ENCODERS
-	frc::Encoder leftEnc{0, 1, true, frc::CounterBase::EncodingType::k4X};
+	frc::Encoder leftEnc{4, 5, true, frc::CounterBase::EncodingType::k4X};
 	frc::Encoder rightEnc{2, 3, false, frc::CounterBase::EncodingType::k4X};
 	const double encoderScale = ((3.141592 * 8) / 2048);
 	int shifts;
 	// HALL EFFECTS
-	frc::DigitalInput Hall{4};
+	frc::DigitalInput Hall{1};
+	const double kH = .2;
 	// Compressor
 	frc::Compressor compressor;
 	//PID Controllers
@@ -354,9 +412,9 @@ private:
 	const std::string kAutoNameScaleL = "L Scale";
 	const std::string kAutoNameScaleR = "R Scale";
 
-	const double kP = 1;
-	const double kI = .001;
-	const double kD = .00001;
+	const double kP = .35;
+	const double kI = 0.01;
+	const double kD = 0;
 	const double kt = .01;
 };
 
