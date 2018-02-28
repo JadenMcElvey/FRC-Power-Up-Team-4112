@@ -83,9 +83,8 @@ public:
 		rightEnc.Reset();
 
 		frc::PIDController lDriveController{kP, kI, kD, &leftEnc, &lDriveMotors};
-		frc::PIDController rDriveController{kP, kI, kD, &leftEnc, &rDriveMotors};
+		frc::PIDController rDriveController{kP, kI, kD, &rightEnc, &rDriveMotors};
 
-		lDriveMotors.SetInverted(true);
 
 		lDriveController.Disable();
 		rDriveController.Disable();
@@ -93,11 +92,8 @@ public:
 		lDriveController.SetOutputRange(-.5, .5);
 		rDriveController.SetOutputRange(-.5, .5);
 
-		lDriveController.SetAbsoluteTolerance(2);
-		rDriveController.SetAbsoluteTolerance(2);
-
-		lDriveController.SetToleranceBuffer(10);
-		rDriveController.SetToleranceBuffer(10);
+		lDriveController.SetAbsoluteTolerance(.5);
+		rDriveController.SetAbsoluteTolerance(.5);
 
 		std::string autoSelected = frc::SmartDashboard::GetString("Auto Selector", kAutoNameMobility);
 		std::cout << "Auto selected: " << autoSelected << std::endl;
@@ -107,20 +103,21 @@ public:
 		if (autoSelected == kAutoNameMobility)
 		{
 			std::cout << "Beginning Mobility" << std::endl;
-			lDriveController.SetSetpoint(120);
+			lDriveController.SetSetpoint(-120);
 			rDriveController.SetSetpoint(120);
 
 			lDriveController.Enable();
 			rDriveController.Enable();
-			while(lDriveController.IsEnabled() && rDriveController.IsEnabled())
+			while(!(lDriveController.OnTarget() && rDriveController.OnTarget()))
 			{
-				if (lDriveController.OnTarget() && rDriveController.OnTarget())
-				{
-					lDriveController.Disable();
-					rDriveController.Disable();
-				}
+				lDriveController.Enable();
+				rDriveController.Enable();
+
 				std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
 			}
+			lDriveController.Disable();
+			rDriveController.Disable();
+			std::cout << "good" << std::endl;
 		}
 		else if (autoSelected == kAutoNameSwitchL)
 		{
@@ -155,6 +152,7 @@ public:
 					{
 						lDriveController.Disable();
 						rDriveController.Disable();
+						std::cout << "disabled" << std::endl;
 					}
 				std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
 				}
@@ -257,7 +255,6 @@ public:
 	 * Runs the motors with arcade steering.
 	 */
 	void OperatorControl() override {
-		lDriveMotors.SetInverted(false);
 		robotDrive.SetSafetyEnabled(true);
 		while (IsOperatorControl() && IsEnabled())
 			{
@@ -339,7 +336,7 @@ private:
 	// NAVX GYRO
 	AHRS *navx;
 	// ENCODERS
-	frc::Encoder leftEnc{4, 5, true, frc::CounterBase::EncodingType::k4X};
+	frc::Encoder leftEnc{4, 5, false, frc::CounterBase::EncodingType::k4X};
 	frc::Encoder rightEnc{2, 3, false, frc::CounterBase::EncodingType::k4X};
 	const double encoderScale = ((3.141592 * 8) / 2048);
 	int shifts;
