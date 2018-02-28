@@ -82,23 +82,22 @@ public:
 		leftEnc.Reset();
 		rightEnc.Reset();
 
-		frc::PIDController LFdriveController{kP, kI, kD, &leftEnc, &f_leftMotor};
-		frc::PIDController LBdriveController{kP, kI, kD, &leftEnc, &b_leftMotor};
-		frc::PIDController RFdriveController{kP, kI, kD, &rightEnc, &f_rightMotor};
-		frc::PIDController RBdriveController{kP, kI, kD, &rightEnc, &b_rightMotor};
+		frc::PIDController lDriveController{kP, kI, kD, &leftEnc, &lDriveMotors};
+		frc::PIDController rDriveController{kP, kI, kD, &leftEnc, &rDriveMotors};
 
-		f_leftMotor.SetInverted(true);
-		b_leftMotor.SetInverted(true);
+		lDriveMotors.SetInverted(true);
 
-		LFdriveController.Disable();
-		LBdriveController.Disable();
-		RFdriveController.Disable();
-		RBdriveController.Disable();
+		lDriveController.Disable();
+		rDriveController.Disable();
 
-		LFdriveController.SetOutputRange(-.5, .5);
-		LBdriveController.SetOutputRange(-.5, .5);
-		RFdriveController.SetOutputRange(-.5, .5);
-		RBdriveController.SetOutputRange(-.5, .5);
+		lDriveController.SetOutputRange(-.5, .5);
+		rDriveController.SetOutputRange(-.5, .5);
+
+		lDriveController.SetAbsoluteTolerance(2);
+		rDriveController.SetAbsoluteTolerance(2);
+
+		lDriveController.SetToleranceBuffer(10);
+		rDriveController.SetToleranceBuffer(10);
 
 		std::string autoSelected = frc::SmartDashboard::GetString("Auto Selector", kAutoNameMobility);
 		std::cout << "Auto selected: " << autoSelected << std::endl;
@@ -108,45 +107,28 @@ public:
 		if (autoSelected == kAutoNameMobility)
 		{
 			std::cout << "Beginning Mobility" << std::endl;
-			while(leftEnc.GetDistance()< 119)
-			{
-				LFdriveController.SetSetpoint(120);
-				LBdriveController.SetSetpoint(120);
-				RFdriveController.SetSetpoint(120);
-				RBdriveController.SetSetpoint(120);
+			lDriveController.SetSetpoint(120);
+			rDriveController.SetSetpoint(120);
 
-				LFdriveController.Enable();
-				LBdriveController.Enable();
-				RFdriveController.Enable();
-				RBdriveController.Enable();
+			lDriveController.Enable();
+			rDriveController.Enable();
+			while(lDriveController.IsEnabled() && rDriveController.IsEnabled())
+			{
+				if (lDriveController.OnTarget() && rDriveController.OnTarget())
+				{
+					lDriveController.Disable();
+					rDriveController.Disable();
+				}
 				std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
 			}
-			LFdriveController.Disable();
-			LBdriveController.Disable();
-			RFdriveController.Disable();
-			RBdriveController.Disable();
 		}
 		else if (autoSelected == kAutoNameSwitchL)
 		{
 			if(gameData[0] == 'L')
 			{
 				std::cout << "Beginning Left Switch" << std::endl;
-				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
-				{
-					LFdriveController.SetSetpoint(120);
-					LBdriveController.SetSetpoint(120);
-					RFdriveController.SetSetpoint(120);
-					RBdriveController.SetSetpoint(120);
 
-					LFdriveController.Enable();
-					LBdriveController.Enable();
-					RFdriveController.Enable();
-					RBdriveController.Enable();
-				}
-				LFdriveController.Disable();
-				LBdriveController.Disable();
-				RFdriveController.Disable();
-				RBdriveController.Disable();
+				/*
 				angle = 90;
 				while(navx->GetAngle()<85)
 				{
@@ -157,21 +139,24 @@ public:
 				intake.Set(-1);
 				frc::Wait(2);
 				intake.Set(0);
+				*/
 			}
 			else
 			{
 				std::cout << "Sorry Left Switch Failed; Performing Mobility" << std::endl;
-				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
-				{
-					LFdriveController.SetSetpoint(120);
-					LBdriveController.SetSetpoint(120);
-					RFdriveController.SetSetpoint(120);
-					RBdriveController.SetSetpoint(120);
+				lDriveController.SetSetpoint(120);
+				rDriveController.SetSetpoint(120);
 
-					LFdriveController.Enable();
-					LBdriveController.Enable();
-					RFdriveController.Enable();
-					RBdriveController.Enable();
+				lDriveController.Enable();
+				rDriveController.Enable();
+				while(lDriveController.IsEnabled() && rDriveController.IsEnabled())
+				{
+					if (lDriveController.OnTarget() && rDriveController.OnTarget())
+					{
+						lDriveController.Disable();
+						rDriveController.Disable();
+					}
+				std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
 				}
 			}
 		}
@@ -180,22 +165,7 @@ public:
 			if(gameData[0] == 'R')
 			{
 				std::cout << "Beginning Right Switch" << std::endl;
-				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
-				{
-					LFdriveController.SetSetpoint(120);
-					LBdriveController.SetSetpoint(120);
-					RFdriveController.SetSetpoint(120);
-					RBdriveController.SetSetpoint(120);
-
-					LFdriveController.Enable();
-					LBdriveController.Enable();
-					RFdriveController.Enable();
-					RBdriveController.Enable();
-				}
-				LFdriveController.Disable();
-				LBdriveController.Disable();
-				RFdriveController.Disable();
-				RBdriveController.Disable();
+				/*
 				angle = -90;
 				while(navx->GetAngle()>-85)
 				{
@@ -206,21 +176,24 @@ public:
 				intake.Set(-1);
 				frc::Wait(2);
 				intake.Set(0);
+				*/
 			}
 			else
 			{
 				std::cout << "Sorry Right Switch Failed; Performing Mobility" << std::endl;
-				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
-				{
-					LFdriveController.SetSetpoint(120);
-					LBdriveController.SetSetpoint(120);
-					RFdriveController.SetSetpoint(120);
-					RBdriveController.SetSetpoint(120);
+				lDriveController.SetSetpoint(120);
+				rDriveController.SetSetpoint(120);
 
-					LFdriveController.Enable();
-					LBdriveController.Enable();
-					RFdriveController.Enable();
-					RBdriveController.Enable();
+				lDriveController.Enable();
+				rDriveController.Enable();
+				while(lDriveController.IsEnabled() && rDriveController.IsEnabled())
+				{
+					if (lDriveController.OnTarget() && rDriveController.OnTarget())
+					{
+						lDriveController.Disable();
+						rDriveController.Disable();
+					}
+				std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
 				}
 			}
 		}
@@ -229,37 +202,23 @@ public:
 			if(gameData[1] == 'L')
 			{
 				std::cout << "Beginning Left Scale" << std::endl;
-				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
-				{
-					LFdriveController.SetSetpoint(288);
-					LBdriveController.SetSetpoint(288);
-					RFdriveController.SetSetpoint(288);
-					RBdriveController.SetSetpoint(288);
-
-					LFdriveController.Enable();
-					LBdriveController.Enable();
-					RFdriveController.Enable();
-					RBdriveController.Enable();
-				}
-				LFdriveController.Disable();
-				LBdriveController.Disable();
-				RFdriveController.Disable();
-				RBdriveController.Disable();
 			}
 			else
 			{
 				std::cout << "Sorry Left Scale Failed; Performing Mobility" << std::endl;
-				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
-				{
-					LFdriveController.SetSetpoint(120);
-					LBdriveController.SetSetpoint(120);
-					RFdriveController.SetSetpoint(120);
-					RBdriveController.SetSetpoint(120);
+				lDriveController.SetSetpoint(120);
+				rDriveController.SetSetpoint(120);
 
-					LFdriveController.Enable();
-					LBdriveController.Enable();
-					RFdriveController.Enable();
-					RBdriveController.Enable();
+				lDriveController.Enable();
+				rDriveController.Enable();
+				while(lDriveController.IsEnabled() && rDriveController.IsEnabled())
+				{
+					if (lDriveController.OnTarget() && rDriveController.OnTarget())
+					{
+						lDriveController.Disable();
+						rDriveController.Disable();
+					}
+				std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
 				}
 			}
 		}
@@ -268,36 +227,23 @@ public:
 			if(gameData[1] == 'R')
 			{
 				std::cout << "Beginning Right Scale" << std::endl;
-				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
-				{
-					LFdriveController.SetSetpoint(288);
-					LBdriveController.SetSetpoint(288);
-					RFdriveController.SetSetpoint(288);
-					RBdriveController.SetSetpoint(288);
-
-					LFdriveController.Enable();
-					LBdriveController.Enable();
-					RFdriveController.Enable();
-					RBdriveController.Enable();
-				}
-				LFdriveController.Disable();
-				LBdriveController.Disable();
-				RFdriveController.Disable();
-				RBdriveController.Disable();			}
+			}
 			else
 			{
 				std::cout << "Sorry Right Scale Failed; Performing Mobility" << std::endl;
-				while(!LFdriveController.OnTarget() && !RFdriveController.OnTarget())
-				{
-					LFdriveController.SetSetpoint(120);
-					LBdriveController.SetSetpoint(120);
-					RFdriveController.SetSetpoint(120);
-					RBdriveController.SetSetpoint(120);
+				lDriveController.SetSetpoint(120);
+				rDriveController.SetSetpoint(120);
 
-					LFdriveController.Enable();
-					LBdriveController.Enable();
-					RFdriveController.Enable();
-					RBdriveController.Enable();
+				lDriveController.Enable();
+				rDriveController.Enable();
+				while(lDriveController.IsEnabled() && rDriveController.IsEnabled())
+				{
+					if (lDriveController.OnTarget() && rDriveController.OnTarget())
+					{
+						lDriveController.Disable();
+						rDriveController.Disable();
+					}
+				std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
 				}
 			}
 		}
@@ -311,8 +257,7 @@ public:
 	 * Runs the motors with arcade steering.
 	 */
 	void OperatorControl() override {
-		f_leftMotor.SetInverted(true);
-		b_leftMotor.SetInverted(true);
+		lDriveMotors.SetInverted(false);
 		robotDrive.SetSafetyEnabled(true);
 		while (IsOperatorControl() && IsEnabled())
 			{
@@ -331,7 +276,7 @@ public:
 				lift.Set(controller.GetTriggerAxis(frc::GenericHID::kLeftHand)-controller.GetTriggerAxis(frc::GenericHID::kRightHand));
 			}
 
-			//Intake
+			// Intake
 			if (controller.GetBumper(frc::GenericHID::kLeftHand))
 			{
 				intake.Set( .7);
