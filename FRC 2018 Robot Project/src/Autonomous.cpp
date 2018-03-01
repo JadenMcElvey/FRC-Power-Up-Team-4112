@@ -9,15 +9,20 @@ void drive(frc::PIDController& leftController, frc::PIDController& rightControll
 	rightController.Enable();
 	while(!(leftController.OnTarget() && rightController.OnTarget()))
 	{
-		leftController.Enable();
-		rightController.Enable();
 		if(navx->GetAngle()>10)
 		{
+			leftController.Enable();
 			rMotors.Set(rightController.Get()*.8);
 		}
 		else if(navx->GetAngle()<-10)
 		{
+			rightController.Enable();
 			lMotors.Set(leftController.Get()*.8);
+		}
+		else
+		{
+			leftController.Enable();
+			rightController.Enable();
 		}
 		frc::Wait(0.001);
 		std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
