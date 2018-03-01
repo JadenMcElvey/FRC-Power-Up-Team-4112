@@ -89,8 +89,8 @@ public:
 		lDriveController.Disable();
 		rDriveController.Disable();
 
-		lDriveController.SetOutputRange(-.5, .5);
-		rDriveController.SetOutputRange(-.5, .5);
+		lDriveController.SetOutputRange(-.25, .25);
+		rDriveController.SetOutputRange(-.25, .25);
 
 		lDriveController.SetAbsoluteTolerance(.5);
 		rDriveController.SetAbsoluteTolerance(.5);
@@ -112,50 +112,70 @@ public:
 			{
 				lDriveController.Enable();
 				rDriveController.Enable();
-
+				if(navx->GetAngle()>10)
+				{
+					rDriveMotors.Set(rDriveController.Get()*.8);
+				}
+				else if(navx->GetAngle()<-10)
+				{
+					lDriveMotors.Set(lDriveController.Get()*.8);
+				}
+				frc::Wait(0.001);
 				std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
 			}
 			lDriveController.Disable();
 			rDriveController.Disable();
-			std::cout << "good" << std::endl;
+			rDriveMotors.Set(0);
+			lDriveMotors.Set(0);
 		}
 		else if (autoSelected == kAutoNameSwitchL)
 		{
 			if(gameData[0] == 'L')
 			{
 				std::cout << "Beginning Left Switch" << std::endl;
-
-				/*
-				angle = 90;
-				while(navx->GetAngle()<85)
-				{
-					robotDrive.CurvatureDrive(.5, ((navx->GetAngle()+angle)*kt), true);
-					lift.Set(.25);
-				}
+				lift.Set(.7);
+				frc::Wait(.75);
 				lift.Set(0);
-				intake.Set(-1);
+				lDriveController.SetSetpoint(-168);
+				rDriveController.SetSetpoint(168);
+
+				lDriveController.Enable();
+				rDriveController.Enable();
+				while(!(lDriveController.OnTarget() && rDriveController.OnTarget()))
+				{
+					lDriveController.Enable();
+					rDriveController.Enable();
+
+					std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
+				}
+				lDriveController.Disable();
+				rDriveController.Disable();
+				frc::Wait(.5);
+				angle = 90;
+				while(navx->GetAngle()<87)
+				{
+					robotDrive.CurvatureDrive(.25, ((navx->GetAngle()+angle)*kt), true);
+				}
 				frc::Wait(2);
 				intake.Set(0);
-				*/
 			}
 			else
 			{
 				std::cout << "Sorry Left Switch Failed; Performing Mobility" << std::endl;
-				lDriveController.SetSetpoint(120);
+				lDriveController.SetSetpoint(-120);
 				rDriveController.SetSetpoint(120);
 
 				lDriveController.Enable();
 				rDriveController.Enable();
-				while(lDriveController.IsEnabled() && rDriveController.IsEnabled())
+				while(!(lDriveController.OnTarget() && rDriveController.OnTarget()))
 				{
-					if (lDriveController.OnTarget() && rDriveController.OnTarget())
-					{
-						lDriveController.Disable();
-						rDriveController.Disable();
-						std::cout << "disabled" << std::endl;
-					}
-				std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
+					lDriveController.Enable();
+					rDriveController.Enable();
+					frc::Wait(0.001);
+					std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
 				}
+				lDriveController.Disable();
+				rDriveController.Disable();
 			}
 		}
 		else if (autoSelected == kAutoNameSwitchR)
@@ -179,20 +199,20 @@ public:
 			else
 			{
 				std::cout << "Sorry Right Switch Failed; Performing Mobility" << std::endl;
-				lDriveController.SetSetpoint(120);
+				lDriveController.SetSetpoint(-120);
 				rDriveController.SetSetpoint(120);
 
 				lDriveController.Enable();
 				rDriveController.Enable();
-				while(lDriveController.IsEnabled() && rDriveController.IsEnabled())
+				while(!(lDriveController.OnTarget() && rDriveController.OnTarget()))
 				{
-					if (lDriveController.OnTarget() && rDriveController.OnTarget())
-					{
-						lDriveController.Disable();
-						rDriveController.Disable();
-					}
-				std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
+					lDriveController.Enable();
+					rDriveController.Enable();
+					frc::Wait(0.001);
+					std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
 				}
+				lDriveController.Disable();
+				rDriveController.Disable();
 			}
 		}
 		else if (autoSelected == kAutoNameScaleL)
@@ -204,20 +224,20 @@ public:
 			else
 			{
 				std::cout << "Sorry Left Scale Failed; Performing Mobility" << std::endl;
-				lDriveController.SetSetpoint(120);
+				lDriveController.SetSetpoint(-120);
 				rDriveController.SetSetpoint(120);
 
 				lDriveController.Enable();
 				rDriveController.Enable();
-				while(lDriveController.IsEnabled() && rDriveController.IsEnabled())
+				while(!(lDriveController.OnTarget() && rDriveController.OnTarget()))
 				{
-					if (lDriveController.OnTarget() && rDriveController.OnTarget())
-					{
-						lDriveController.Disable();
-						rDriveController.Disable();
-					}
-				std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
+					lDriveController.Enable();
+					rDriveController.Enable();
+					frc::Wait(0.001);
+					std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
 				}
+				lDriveController.Disable();
+				rDriveController.Disable();
 			}
 		}
 		else if (autoSelected == kAutoNameScaleR)
@@ -229,20 +249,20 @@ public:
 			else
 			{
 				std::cout << "Sorry Right Scale Failed; Performing Mobility" << std::endl;
-				lDriveController.SetSetpoint(120);
+				lDriveController.SetSetpoint(-120);
 				rDriveController.SetSetpoint(120);
 
 				lDriveController.Enable();
 				rDriveController.Enable();
-				while(lDriveController.IsEnabled() && rDriveController.IsEnabled())
+				while(!(lDriveController.OnTarget() && rDriveController.OnTarget()))
 				{
-					if (lDriveController.OnTarget() && rDriveController.OnTarget())
-					{
-						lDriveController.Disable();
-						rDriveController.Disable();
-					}
-				std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
+					lDriveController.Enable();
+					rDriveController.Enable();
+					frc::Wait(0.001);
+					std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
 				}
+				lDriveController.Disable();
+				rDriveController.Disable();
 			}
 		}
 		else
@@ -354,8 +374,9 @@ private:
 	const std::string kAutoNameScaleL = "L Scale";
 	const std::string kAutoNameScaleR = "R Scale";
 
-	const double kP = .35;
-	const double kI = 0.01;
+	double kP = .35;
+	const double kPt = .01;
+	const double kI = 0;
 	const double kD = 0;
 	const double kt = .01;
 };
