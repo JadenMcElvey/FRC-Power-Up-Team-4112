@@ -22,6 +22,8 @@
 #include <Encoder.h>
 #include <DigitalInput.h>
 
+#include "Autonomous.h"
+
 /**
  * This is a demo program showing the use of the DifferentialDrive class.
  * The SampleRobot class is the base of a robot application that will
@@ -75,7 +77,6 @@ public:
 	 * well.
 	 */
 	void Autonomous() {
-		int angle;
 		std::string gameData;
 		gameData = frc::DriverStation::GetInstance().GetGameSpecificMessage();
 
@@ -103,79 +104,19 @@ public:
 		if (autoSelected == kAutoNameMobility)
 		{
 			std::cout << "Beginning Mobility" << std::endl;
-			lDriveController.SetSetpoint(-120);
-			rDriveController.SetSetpoint(120);
-
-			lDriveController.Enable();
-			rDriveController.Enable();
-			while(!(lDriveController.OnTarget() && rDriveController.OnTarget()))
-			{
-				lDriveController.Enable();
-				rDriveController.Enable();
-				if(navx->GetAngle()>10)
-				{
-					rDriveMotors.Set(rDriveController.Get()*.8);
-				}
-				else if(navx->GetAngle()<-10)
-				{
-					lDriveMotors.Set(lDriveController.Get()*.8);
-				}
-				frc::Wait(0.001);
-				std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
-			}
-			lDriveController.Disable();
-			rDriveController.Disable();
-			rDriveMotors.Set(0);
-			lDriveMotors.Set(0);
+			mobility(lDriveController, rDriveController, lDriveMotors, rDriveMotors, leftEnc, rightEnc, navx);
 		}
 		else if (autoSelected == kAutoNameSwitchL)
 		{
 			if(gameData[0] == 'L')
 			{
 				std::cout << "Beginning Left Switch" << std::endl;
-				lift.Set(.7);
-				frc::Wait(.75);
-				lift.Set(0);
-				lDriveController.SetSetpoint(-168);
-				rDriveController.SetSetpoint(168);
-
-				lDriveController.Enable();
-				rDriveController.Enable();
-				while(!(lDriveController.OnTarget() && rDriveController.OnTarget()))
-				{
-					lDriveController.Enable();
-					rDriveController.Enable();
-
-					std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
-				}
-				lDriveController.Disable();
-				rDriveController.Disable();
-				frc::Wait(.5);
-				angle = 90;
-				while(navx->GetAngle()<87)
-				{
-					robotDrive.CurvatureDrive(.25, ((navx->GetAngle()+angle)*kt), true);
-				}
-				frc::Wait(2);
-				intake.Set(0);
+				leftSwitch(robotDrive, kt, lDriveController, rDriveController, lDriveMotors, rDriveMotors, lift, intake, leftEnc, rightEnc, navx);
 			}
 			else
 			{
 				std::cout << "Sorry Left Switch Failed; Performing Mobility" << std::endl;
-				lDriveController.SetSetpoint(-120);
-				rDriveController.SetSetpoint(120);
-
-				lDriveController.Enable();
-				rDriveController.Enable();
-				while(!(lDriveController.OnTarget() && rDriveController.OnTarget()))
-				{
-					lDriveController.Enable();
-					rDriveController.Enable();
-					frc::Wait(0.001);
-					std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
-				}
-				lDriveController.Disable();
-				rDriveController.Disable();
+				mobility(lDriveController, rDriveController, lDriveMotors, rDriveMotors, leftEnc, rightEnc, navx);
 			}
 		}
 		else if (autoSelected == kAutoNameSwitchR)
@@ -183,36 +124,12 @@ public:
 			if(gameData[0] == 'R')
 			{
 				std::cout << "Beginning Right Switch" << std::endl;
-				/*
-				angle = -90;
-				while(navx->GetAngle()>-85)
-				{
-					robotDrive.CurvatureDrive(.5, ((navx->GetAngle()+angle)*kt), true);
-					lift.Set(.25);
-				}
-				lift.Set(0);
-				intake.Set(-1);
-				frc::Wait(2);
-				intake.Set(0);
-				*/
+				rightSwitch(robotDrive, kt, lDriveController, rDriveController, lDriveMotors, rDriveMotors, lift, intake, leftEnc, rightEnc, navx);
 			}
 			else
 			{
 				std::cout << "Sorry Right Switch Failed; Performing Mobility" << std::endl;
-				lDriveController.SetSetpoint(-120);
-				rDriveController.SetSetpoint(120);
-
-				lDriveController.Enable();
-				rDriveController.Enable();
-				while(!(lDriveController.OnTarget() && rDriveController.OnTarget()))
-				{
-					lDriveController.Enable();
-					rDriveController.Enable();
-					frc::Wait(0.001);
-					std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
-				}
-				lDriveController.Disable();
-				rDriveController.Disable();
+				mobility(lDriveController, rDriveController, lDriveMotors, rDriveMotors, leftEnc, rightEnc, navx);
 			}
 		}
 		else if (autoSelected == kAutoNameScaleL)
@@ -220,24 +137,12 @@ public:
 			if(gameData[1] == 'L')
 			{
 				std::cout << "Beginning Left Scale" << std::endl;
+				leftScale(robotDrive, kt, lDriveController, rDriveController, lDriveMotors, rDriveMotors, lift, intake, leftEnc, rightEnc, navx);
 			}
 			else
 			{
 				std::cout << "Sorry Left Scale Failed; Performing Mobility" << std::endl;
-				lDriveController.SetSetpoint(-120);
-				rDriveController.SetSetpoint(120);
-
-				lDriveController.Enable();
-				rDriveController.Enable();
-				while(!(lDriveController.OnTarget() && rDriveController.OnTarget()))
-				{
-					lDriveController.Enable();
-					rDriveController.Enable();
-					frc::Wait(0.001);
-					std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
-				}
-				lDriveController.Disable();
-				rDriveController.Disable();
+				mobility(lDriveController, rDriveController, lDriveMotors, rDriveMotors, leftEnc, rightEnc, navx);
 			}
 		}
 		else if (autoSelected == kAutoNameScaleR)
@@ -245,29 +150,13 @@ public:
 			if(gameData[1] == 'R')
 			{
 				std::cout << "Beginning Right Scale" << std::endl;
+				rightScale(robotDrive, kt, lDriveController, rDriveController, lDriveMotors, rDriveMotors, lift, intake, leftEnc, rightEnc, navx);
 			}
 			else
 			{
 				std::cout << "Sorry Right Scale Failed; Performing Mobility" << std::endl;
-				lDriveController.SetSetpoint(-120);
-				rDriveController.SetSetpoint(120);
-
-				lDriveController.Enable();
-				rDriveController.Enable();
-				while(!(lDriveController.OnTarget() && rDriveController.OnTarget()))
-				{
-					lDriveController.Enable();
-					rDriveController.Enable();
-					frc::Wait(0.001);
-					std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
-				}
-				lDriveController.Disable();
-				rDriveController.Disable();
+				mobility(lDriveController, rDriveController, lDriveMotors, rDriveMotors, leftEnc, rightEnc, navx);
 			}
-		}
-		else
-		{
-
 		}
 	}
 
@@ -374,8 +263,7 @@ private:
 	const std::string kAutoNameScaleL = "L Scale";
 	const std::string kAutoNameScaleR = "R Scale";
 
-	double kP = .35;
-	const double kPt = .01;
+	const double kP = .35;
 	const double kI = 0;
 	const double kD = 0;
 	const double kt = .01;
