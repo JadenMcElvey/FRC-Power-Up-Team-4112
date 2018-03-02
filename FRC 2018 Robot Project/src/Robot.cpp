@@ -82,6 +82,7 @@ public:
 
 		leftEnc.Reset();
 		rightEnc.Reset();
+		navx->Reset();
 
 		frc::PIDController lDriveController{kP, kI, kD, &leftEnc, &lDriveMotors};
 		frc::PIDController rDriveController{kP, kI, kD, &rightEnc, &rDriveMotors};
@@ -90,8 +91,8 @@ public:
 		lDriveController.Disable();
 		rDriveController.Disable();
 
-		lDriveController.SetOutputRange(-.25, .25);
-		rDriveController.SetOutputRange(-.25, .25);
+		lDriveController.SetOutputRange(-.4, .4);
+		rDriveController.SetOutputRange(-.4, .4);
 
 		lDriveController.SetAbsoluteTolerance(.5);
 		rDriveController.SetAbsoluteTolerance(.5);
@@ -167,7 +168,7 @@ public:
 		robotDrive.SetSafetyEnabled(true);
 		while (IsOperatorControl() && IsEnabled())
 			{
-			std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
+			std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << "Angle" << navx->GetAngle() <<std::endl;
 			// Drive
 			robotDrive.TankDrive(controller.GetY(frc::GenericHID::kLeftHand), controller.GetY(frc::GenericHID::kRightHand));
 			// Lift
@@ -247,7 +248,7 @@ private:
 	// ENCODERS
 	frc::Encoder leftEnc{4, 5, false, frc::CounterBase::EncodingType::k4X};
 	frc::Encoder rightEnc{2, 3, false, frc::CounterBase::EncodingType::k4X};
-	const double encoderScale = ((3.141592 * 8) / 2048);
+	const double encoderScale = ((3.141592 * 6) / 2048);
 	int shifts;
 	// HALL EFFECTS
 	frc::DigitalInput Hall{1};

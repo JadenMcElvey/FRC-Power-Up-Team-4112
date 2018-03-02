@@ -12,7 +12,7 @@
 void drive(frc::PIDController& leftController, frc::PIDController& rightController, frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, double distance, frc::Encoder& leftEnc, frc::Encoder& rightEnc, AHRS* navx);
 void liftSwitch(frc::SpeedControllerGroup& lift);
 void liftScale(frc::SpeedControllerGroup& lift);
-void turn(frc::DifferentialDrive& drive, double angle, double kt, AHRS* navx);
+void turn(frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, double angle, AHRS* navx);
 void drop(frc::SpeedControllerGroup& intake);
 
 void mobility(frc::PIDController& leftController, frc::PIDController& rightController, frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, frc::Encoder& leftEnc, frc::Encoder& rightEnc, AHRS* navx);

@@ -9,15 +9,16 @@ void drive(frc::PIDController& leftController, frc::PIDController& rightControll
 	rightController.Enable();
 	while(!(leftController.OnTarget() && rightController.OnTarget()))
 	{
-		if(navx->GetAngle()>10)
-		{
-			leftController.Enable();
-			rMotors.Set(rightController.Get()*.8);
-		}
-		else if(navx->GetAngle()<-10)
+		if(navx->GetAngle()>2.5)
 		{
 			rightController.Enable();
-			lMotors.Set(leftController.Get()*.8);
+			lMotors.Set(leftController.Get()*.7);
+		}
+		else if(navx->GetAngle()<-2.5)
+		{
+			leftController.Enable();
+			rMotors.Set(rightController.Get()*.7);
+
 		}
 		else
 		{
@@ -25,7 +26,7 @@ void drive(frc::PIDController& leftController, frc::PIDController& rightControll
 			rightController.Enable();
 		}
 		frc::Wait(0.001);
-		std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << std::endl;
+		std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << "Angle" << navx->GetAngle() <<std::endl;
 	}
 	leftController.Disable();
 	rightController.Disable();
@@ -47,24 +48,29 @@ void liftScale(frc::SpeedControllerGroup& lift)
 	lift.Set(0);
 }
 
-void turn(frc::DifferentialDrive& drive, double angle, double kt, AHRS* navx)
+void turn(frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, double angle, AHRS* navx)
 {
 	if(angle>0)
 	{
-		while((navx->GetAngle()+5)<angle)
+		while(navx->GetAngle()<angle)
 		{
-			drive.CurvatureDrive(.25, ((angle-navx->GetAngle())*kt), true);
+			lMotors.Set(-.2);
+			rMotors.Set(-.2);
 			frc::Wait(0.001);
 		}
 	}
-	else if(angle<0)
+	else
 	{
-		while((navx->GetAngle()-5)>angle)
+		while(navx->GetAngle()>angle)
 		{
-			drive.CurvatureDrive(.25, ((angle-navx->GetAngle())*kt), true);
+			lMotors.Set(.2);
+			rMotors.Set(.2);
 			frc::Wait(0.001);
 		}
 	}
+	lMotors.Set(0);
+	rMotors.Set(0);
+	std::cout << "Angle" << navx->GetAngle() << std::endl;
 }
 
 void drop(frc::SpeedControllerGroup& intake)
@@ -81,33 +87,33 @@ void mobility(frc::PIDController& leftController, frc::PIDController& rightContr
 
 void leftSwitch(frc::DifferentialDrive& Robotdrive, double kt, frc::PIDController& leftController, frc::PIDController& rightController, frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, frc::SpeedControllerGroup& lift, frc::SpeedControllerGroup& intake, frc::Encoder& leftEnc, frc::Encoder& rightEnc, AHRS* navx)
 {
-	liftSwitch(lift);
+	//liftSwitch(lift);
 	drive(leftController, rightController, lMotors, rMotors, 168, leftEnc, rightEnc, navx);
-	turn(Robotdrive, -90, kt, navx);
+	turn(lMotors, rMotors, 90, navx);
 	drop(intake);
 }
 
 void rightSwitch(frc::DifferentialDrive& Robotdrive, double kt, frc::PIDController& leftController, frc::PIDController& rightController, frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, frc::SpeedControllerGroup& lift, frc::SpeedControllerGroup& intake, frc::Encoder& leftEnc, frc::Encoder& rightEnc, AHRS* navx)
 {
-	liftSwitch(lift);
+	//liftSwitch(lift);
 	drive(leftController, rightController, lMotors, rMotors, 168, leftEnc, rightEnc, navx);
-	turn(Robotdrive, 90, kt, navx);
+	turn(lMotors, rMotors, -90, navx);
 	drop(intake);
 }
 
 void leftScale(frc::DifferentialDrive& Robotdrive, double kt, frc::PIDController& leftController, frc::PIDController& rightController, frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, frc::SpeedControllerGroup& lift, frc::SpeedControllerGroup& intake, frc::Encoder& leftEnc, frc::Encoder& rightEnc, AHRS* navx)
 {
-	liftScale(lift);
+	//liftScale(lift);
 	drive(leftController, rightController, lMotors, rMotors, 240, leftEnc, rightEnc, navx);
-	turn(Robotdrive, -30, kt, navx);
+	turn(lMotors, rMotors, 30, navx);
 	drop(intake);
 }
 
 void rightScale(frc::DifferentialDrive& Robotdrive, double kt, frc::PIDController& leftController, frc::PIDController& rightController, frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, frc::SpeedControllerGroup& lift, frc::SpeedControllerGroup& intake, frc::Encoder& leftEnc, frc::Encoder& rightEnc, AHRS* navx)
 {
-	liftScale(lift);
+	//liftScale(lift);
 	drive(leftController, rightController, lMotors, rMotors, 240, leftEnc, rightEnc, navx);
-	turn(Robotdrive, 30, kt, navx);
+	turn(lMotors, rMotors, -30, navx);
 	drop(intake);
 }
 
