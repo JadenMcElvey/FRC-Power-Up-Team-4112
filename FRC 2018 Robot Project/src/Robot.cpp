@@ -112,7 +112,7 @@ public:
 			if(gameData[0] == 'L')
 			{
 				std::cout << "Beginning Left Switch" << std::endl;
-				leftSwitch(robotDrive, kt, lDriveController, rDriveController, lDriveMotors, rDriveMotors, lift, intake, leftEnc, rightEnc, navx);
+				leftSwitch(robotDrive, lDriveController, rDriveController, lDriveMotors, rDriveMotors, lift, intake, leftEnc, rightEnc, navx);
 			}
 			else
 			{
@@ -125,7 +125,7 @@ public:
 			if(gameData[0] == 'R')
 			{
 				std::cout << "Beginning Right Switch" << std::endl;
-				rightSwitch(robotDrive, kt, lDriveController, rDriveController, lDriveMotors, rDriveMotors, lift, intake, leftEnc, rightEnc, navx);
+				rightSwitch(robotDrive, lDriveController, rDriveController, lDriveMotors, rDriveMotors, lift, intake, leftEnc, rightEnc, navx);
 			}
 			else
 			{
@@ -138,7 +138,7 @@ public:
 			if(gameData[1] == 'L')
 			{
 				std::cout << "Beginning Left Scale" << std::endl;
-				leftScale(robotDrive, kt, lDriveController, rDriveController, lDriveMotors, rDriveMotors, lift, intake, leftEnc, rightEnc, navx);
+				leftScale(robotDrive, lDriveController, rDriveController, lDriveMotors, rDriveMotors, lift, intake, leftEnc, rightEnc, navx);
 			}
 			else
 			{
@@ -151,12 +151,23 @@ public:
 			if(gameData[1] == 'R')
 			{
 				std::cout << "Beginning Right Scale" << std::endl;
-				rightScale(robotDrive, kt, lDriveController, rDriveController, lDriveMotors, rDriveMotors, lift, intake, leftEnc, rightEnc, navx);
+				rightScale(robotDrive, lDriveController, rDriveController, lDriveMotors, rDriveMotors, lift, intake, leftEnc, rightEnc, navx);
 			}
 			else
 			{
 				std::cout << "Sorry Right Scale Failed; Performing Mobility" << std::endl;
 				mobility(lDriveController, rDriveController, lDriveMotors, rDriveMotors, leftEnc, rightEnc, navx);
+			}
+		}
+		else if (autoSelected == kAutoNameMid)
+		{
+			if(gameData[0] == 'L')
+			{
+				leftMid(robotDrive, lDriveController, rDriveController, lDriveMotors, rDriveMotors, lift, intake, leftEnc, rightEnc, navx);
+			}
+			else
+			{
+				rightMid(robotDrive, lDriveController, rDriveController, lDriveMotors, rDriveMotors, lift, intake, leftEnc, rightEnc, navx);
 			}
 		}
 	}
@@ -166,6 +177,8 @@ public:
 	 */
 	void OperatorControl() override {
 		robotDrive.SetSafetyEnabled(true);
+		shifter.ClearAllPCMStickyFaults();
+		brake.ClearAllPCMStickyFaults();
 		while (IsOperatorControl() && IsEnabled())
 			{
 			std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << "Angle" << navx->GetAngle() <<std::endl;
@@ -184,17 +197,17 @@ public:
 			}
 
 			// Intake
-			if (controller.GetBumper(frc::GenericHID::kLeftHand))
+			if (controller.GetBumper(frc::GenericHID::kRightHand))
 			{
-				intake.Set( .7);
+				intake.Set(.8);
 			}
-			else if (controller.GetBumper(frc::GenericHID::kRightHand))
+			else if (controller.GetBumper(frc::GenericHID::kLeftHand))
 			{
-				intake.Set(-.7);
+				intake.Set(-.8);
 			}
 			else
 			{
-				intake.Set(0);
+				intake.Set(-.1);
 			}
 			if (controller.GetStickButton(frc::GenericHID::kLeftHand))
 			{
@@ -207,6 +220,18 @@ public:
 			else
 			{
 				shifter.Set(frc::DoubleSolenoid::kOff);
+			}
+			if (controller.GetStartButton())
+			{
+				brake.Set(frc::DoubleSolenoid::kForward);
+			}
+			else if (controller.GetBackButton())
+			{
+				brake.Set(frc::DoubleSolenoid::kReverse);
+			}
+			else
+			{
+				brake.Set(frc::DoubleSolenoid::kOff);
 			}
 			// The motors will be updated every 5ms
 			frc::Wait(0.005);
@@ -243,6 +268,7 @@ private:
 	frc::XboxController controller{0};
 	// PNUEMATIC SHIFTING
 	frc::DoubleSolenoid shifter{0, 1};
+	frc::DoubleSolenoid brake{6, 7};
 	// NAVX GYRO
 	AHRS *navx;
 	// ENCODERS
@@ -263,6 +289,7 @@ private:
 	const std::string kAutoNameSwitchR = "R Switch";
 	const std::string kAutoNameScaleL = "L Scale";
 	const std::string kAutoNameScaleR = "R Scale";
+	const std::string kAutoNameMid = "Mid";
 
 	const double kP = .35;
 	const double kI = 0;
