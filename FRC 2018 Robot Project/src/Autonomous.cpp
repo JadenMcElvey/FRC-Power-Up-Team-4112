@@ -85,35 +85,56 @@ void mobility(frc::PIDController& leftController, frc::PIDController& rightContr
 	drive(leftController, rightController, lMotors, rMotors, 120, leftEnc, rightEnc, navx);
 }
 
-void leftSwitch(frc::DifferentialDrive& Robotdrive, double kt, frc::PIDController& leftController, frc::PIDController& rightController, frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, frc::SpeedControllerGroup& lift, frc::SpeedControllerGroup& intake, frc::Encoder& leftEnc, frc::Encoder& rightEnc, AHRS* navx)
+void leftSwitch(frc::DifferentialDrive& Robotdrive, frc::PIDController& leftController, frc::PIDController& rightController, frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, frc::SpeedControllerGroup& lift, frc::SpeedControllerGroup& intake, frc::Encoder& leftEnc, frc::Encoder& rightEnc, AHRS* navx)
 {
-	//liftSwitch(lift);
-	drive(leftController, rightController, lMotors, rMotors, 168, leftEnc, rightEnc, navx);
-	turn(lMotors, rMotors, 90, navx);
-	drop(intake);
-}
-
-void rightSwitch(frc::DifferentialDrive& Robotdrive, double kt, frc::PIDController& leftController, frc::PIDController& rightController, frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, frc::SpeedControllerGroup& lift, frc::SpeedControllerGroup& intake, frc::Encoder& leftEnc, frc::Encoder& rightEnc, AHRS* navx)
-{
-	//liftSwitch(lift);
+	liftSwitch(lift);
 	drive(leftController, rightController, lMotors, rMotors, 168, leftEnc, rightEnc, navx);
 	turn(lMotors, rMotors, -90, navx);
+	drive(leftController, rightController, lMotors, rMotors, 12, leftEnc, rightEnc, navx);
 	drop(intake);
 }
-
-void leftScale(frc::DifferentialDrive& Robotdrive, double kt, frc::PIDController& leftController, frc::PIDController& rightController, frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, frc::SpeedControllerGroup& lift, frc::SpeedControllerGroup& intake, frc::Encoder& leftEnc, frc::Encoder& rightEnc, AHRS* navx)
+void rightSwitch(frc::DifferentialDrive& Robotdrive, frc::PIDController& leftController, frc::PIDController& rightController, frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, frc::SpeedControllerGroup& lift, frc::SpeedControllerGroup& intake, frc::Encoder& leftEnc, frc::Encoder& rightEnc, AHRS* navx)
 {
-	//liftScale(lift);
-	drive(leftController, rightController, lMotors, rMotors, 240, leftEnc, rightEnc, navx);
-	turn(lMotors, rMotors, 30, navx);
+	liftSwitch(lift);
+	drive(leftController, rightController, lMotors, rMotors, 168, leftEnc, rightEnc, navx);
+	turn(lMotors, rMotors, 90, navx);
+	drive(leftController, rightController, lMotors, rMotors, 12, leftEnc, rightEnc, navx);
 	drop(intake);
 }
-
-void rightScale(frc::DifferentialDrive& Robotdrive, double kt, frc::PIDController& leftController, frc::PIDController& rightController, frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, frc::SpeedControllerGroup& lift, frc::SpeedControllerGroup& intake, frc::Encoder& leftEnc, frc::Encoder& rightEnc, AHRS* navx)
+void leftScale(frc::DifferentialDrive& Robotdrive, frc::PIDController& leftController, frc::PIDController& rightController, frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, frc::SpeedControllerGroup& lift, frc::SpeedControllerGroup& intake, frc::Encoder& leftEnc, frc::Encoder& rightEnc, AHRS* navx)
 {
-	//liftScale(lift);
-	drive(leftController, rightController, lMotors, rMotors, 240, leftEnc, rightEnc, navx);
+	liftScale(lift);
+	drive(leftController, rightController, lMotors, rMotors, 288, leftEnc, rightEnc, navx);
 	turn(lMotors, rMotors, -30, navx);
+	drive(leftController, rightController, lMotors, rMotors, 24, leftEnc, rightEnc, navx);
 	drop(intake);
 }
+void rightScale(frc::DifferentialDrive& Robotdrive, frc::PIDController& leftController, frc::PIDController& rightController, frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, frc::SpeedControllerGroup& lift, frc::SpeedControllerGroup& intake, frc::Encoder& leftEnc, frc::Encoder& rightEnc, AHRS* navx)
+{
+	liftScale(lift);
+	drive(leftController, rightController, lMotors, rMotors, 288, leftEnc, rightEnc, navx);
+	turn(lMotors, rMotors, 30, navx);
+	drive(leftController, rightController, lMotors, rMotors, 24, leftEnc, rightEnc, navx);
+	drop(intake);
+}
+void leftMid(frc::DifferentialDrive& Robotdrive, frc::PIDController& leftController, frc::PIDController& rightController, frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, frc::SpeedControllerGroup& lift, frc::SpeedControllerGroup& intake, frc::Encoder& leftEnc, frc::Encoder& rightEnc, AHRS* navx)
+{
+	liftSwitch(lift);
+	turn(lMotors, rMotors, -45, navx);
+	drive(leftController, rightController, lMotors, rMotors, 76, leftEnc, rightEnc, navx);
+	turn(lMotors, rMotors, 45, navx);
+	drive(leftController, rightController, lMotors, rMotors, 72, leftEnc, rightEnc, navx);
+	drop(intake);
+}
+void rightMid(frc::DifferentialDrive& Robotdrive, frc::PIDController& leftController, frc::PIDController& rightController, frc::SpeedControllerGroup& lMotors, frc::SpeedControllerGroup& rMotors, frc::SpeedControllerGroup& lift, frc::SpeedControllerGroup& intake, frc::Encoder& leftEnc, frc::Encoder& rightEnc, AHRS* navx)
+{
+	liftSwitch(lift);
+	turn(lMotors, rMotors, 45, navx);
+	drive(leftController, rightController, lMotors, rMotors, 76, leftEnc, rightEnc, navx);
+	turn(lMotors, rMotors, -45, navx);
+	drive(leftController, rightController, lMotors, rMotors, 72, leftEnc, rightEnc, navx);
+	drop(intake);
+}
+
+
 
