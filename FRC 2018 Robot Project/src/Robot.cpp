@@ -179,6 +179,8 @@ public:
 		robotDrive.SetSafetyEnabled(true);
 		shifter.ClearAllPCMStickyFaults();
 		brake.ClearAllPCMStickyFaults();
+		lDriveMotors.SetInverted(false);
+		rDriveMotors.SetInverted(false);
 		while (IsOperatorControl() && IsEnabled())
 			{
 			std::cout << "Left" << leftEnc.GetDistance() << ", Right" << rightEnc.GetDistance() << "Angle" << navx->GetAngle() <<std::endl;
@@ -186,20 +188,10 @@ public:
 			robotDrive.TankDrive(controller.GetY(frc::GenericHID::kLeftHand), controller.GetY(frc::GenericHID::kRightHand));
 			// Lift
 			lift.Set(controller.GetTriggerAxis(frc::GenericHID::kLeftHand)-controller.GetTriggerAxis(frc::GenericHID::kRightHand));
-
-			if (!Hall.Get())
-			{
-				lift.Set((controller.GetTriggerAxis(frc::GenericHID::kLeftHand)-controller.GetTriggerAxis(frc::GenericHID::kRightHand))*kH);
-			}
-			else
-			{
-				lift.Set(controller.GetTriggerAxis(frc::GenericHID::kLeftHand)-controller.GetTriggerAxis(frc::GenericHID::kRightHand));
-			}
-
 			// Intake
 			if (controller.GetBumper(frc::GenericHID::kRightHand))
 			{
-				intake.Set(.8);
+				intake.Set(.4);
 			}
 			else if (controller.GetBumper(frc::GenericHID::kLeftHand))
 			{
